@@ -1,0 +1,165 @@
+
+// SCALE MODULE
+const SCALE_STEP = 25;
+const MIN_SCALE = 25;
+const MAX_SCALE = 100;
+const DEFAULT_SCALE = 100;
+
+const smallerButtonElement = document.querySelector('.scale__control--smaller');
+const biggerButtonElement = document.querySelector('.scale__control--bigger');
+const scaleInputElement = document.querySelector('.scale__control--value');
+const imageElement = document.querySelector('.img-upload__preview img');
+
+const scaleImage = (value) => {
+  imageElement.style.transform = `scale(${value / 100})`;
+  scaleInputElement.value = `${value}%`;
+};
+
+const onSmallerButtonClick = () => {
+  const currentValue = parseInt(scaleInputElement.value, 10);
+  let newValue = currentValue - SCALE_STEP;
+  if (newValue < MIN_SCALE) {
+    newValue = MIN_SCALE;
+  }
+  scaleImage(newValue);
+};
+
+const onBiggerButtonClick = () => {
+  const currentValue = parseInt(scaleInputElement.value, 10);
+  let newValue = currentValue + SCALE_STEP;
+  if (newValue > MAX_SCALE) {
+    newValue = MAX_SCALE;
+  }
+  scaleImage(newValue);
+};
+
+const resetScale = () => {
+  scaleImage(DEFAULT_SCALE);
+};
+
+smallerButtonElement.addEventListener('click', onSmallerButtonClick);
+biggerButtonElement.addEventListener('click', onBiggerButtonClick);
+
+// EFFECT MODULE
+const EFFECTS = [
+  {
+    name: 'none',
+    style: 'none',
+    min: 0,
+    max: 100,
+    step: 1,
+    unit: '',
+  },
+  {
+    name: 'chrome',
+    style: 'grayscale',
+    min: 0,
+    max: 1,
+    step: 0.1,
+    unit: '',
+  },
+  {
+    name: 'sepia',
+    style: 'sepia',
+    min: 0,
+    max: 1,
+    step: 0.1,
+    unit: '',
+  },
+  {
+    name: 'marvin',
+    style: 'invert',
+    min: 0,
+    max: 100,
+    step: 1,
+    unit: '%',
+  },
+  {
+    name: 'phobos',
+    style: 'blur',
+    min: 0,
+    max: 3,
+    step: 0.1,
+    unit: 'px',
+  },
+  {
+    name: 'heat',
+    style: 'brightness',
+    min: 1,
+    max: 3,
+    step: 0.1,
+    unit: '',
+  },
+];
+
+const DEFAULT_EFFECT = EFFECTS[0];
+let chosenEffect = DEFAULT_EFFECT;
+
+const effectsElement = document.querySelector('.effects');
+const sliderElement = document.querySelector('.effect-level__slider');
+const sliderContainerElement = document.querySelector('.img-upload__effect-level');
+const effectLevelElement = document.querySelector('.effect-level__value');
+
+const isDefault = () => chosenEffect === DEFAULT_EFFECT;
+
+const showSlider = () => {
+  sliderContainerElement.classList.remove('hidden');
+};
+
+const hideSlider = () => {
+  sliderContainerElement.classList.add('hidden');
+};
+
+const updateSlider = () => {
+  sliderElement.noUiSlider.updateOptions({
+    range: {
+      min: chosenEffect.min,
+      max: chosenEffect.max,
+    },
+    start: chosenEffect.max,
+    step: chosenEffect.step,
+  });
+
+  if (isDefault()) {
+    hideSlider();
+  } else {
+    showSlider();
+  }
+};
+
+const onEffectsChange = (evt) => {
+  if (!evt.target.classList.contains('effects__radio')) {
+    return;
+  }
+  chosenEffect = EFFECTS.find((effect) => effect.name === evt.target.value);
+  imageElement.className = `effects__preview--${chosenEffect.name}`;
+  updateSlider();
+};
+
+const onSliderUpdate = () => {
+  const sliderValue = sliderElement.noUiSlider.get();
+  imageElement.style.filter = isDefault()
+    ? DEFAULT_EFFECT.style
+    : `${chosenEffect.style}(${sliderValue}${chosenEffect.unit})`;
+  effectLevelElement.value = sliderValue;
+};
+
+const resetEffects = () => {
+  chosenEffect = DEFAULT_EFFECT;
+  updateSlider();
+};
+
+window.noUiSlider.create(sliderElement, {
+  range: {
+    min: DEFAULT_EFFECT.min,
+    max: DEFAULT_EFFECT.max,
+  },
+  start: DEFAULT_EFFECT.max,
+  step: DEFAULT_EFFECT.step,
+  connect: 'lower',
+});
+
+hideSlider();
+
+effectsElement.addEventListener('change', onEffectsChange);
+sliderElement.noUiSlider.on('update', onSliderUpdate);
