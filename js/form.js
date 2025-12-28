@@ -1,5 +1,13 @@
+import { resetScale, resetEffects } from './image-edit.js';
+import { sendData } from './api.js';
+import { showSuccessMessage, showErrorMessage } from './message.js';
+
 const MAX_HASHTAG_COUNT = 5;
 const VALID_SYMBOLS = /^#[a-zа-яё0-9]{1,19}$/i;
+const SubmitButtonText = {
+  IDLE: 'Опубликовать',
+  SENDING: 'Публикую...'
+};
 
 const body = document.querySelector('body');
 const form = document.querySelector('.img-upload__form');
@@ -8,6 +16,7 @@ const cancelButton = form.querySelector('.img-upload__cancel');
 const fileField = form.querySelector('.img-upload__input');
 const hashtagField = form.querySelector('.text__hashtags');
 const commentField = form.querySelector('.text__description');
+const submitButton = form.querySelector('.img-upload__submit');
 
 const pristine = new Pristine(form, {
   classTo: 'img-upload__field-wrapper',
@@ -23,20 +32,32 @@ const showModal = () => {
 
 const hideModal = () => {
   form.reset();
+  resetScale();
+  resetEffects();
   pristine.reset();
   overlay.classList.add('hidden');
   body.classList.remove('modal-open');
   document.removeEventListener('keydown', onDocumentKeydown);
 };
 
-const isTextFieldFocused = () =>
-  document.activeElement === hashtagField ||
-  document.activeElement === commentField;
-
 function onDocumentKeydown(evt) {
-  if (evt.key === 'Escape' && !isTextFieldFocused()) {
+  if (evt.key === 'Escape') {
+    const isTextFieldFocused =
+      document.activeElement === hashtagField ||
+      document.activeElement === commentField ||
+      evt.target === hashtagField ||
+      evt.target === commentField;
+
+    if (isTextFieldFocused) {
+      evt.stopPropagation();
+      return;
+    }
+
     evt.preventDefault();
-    hideModal();
+    const isErrorMessageExists = document.querySelector('.error');
+    if (!isErrorMessageExists) {
+      hideModal();
+    }
   }
 }
 
@@ -46,6 +67,16 @@ const onCancelButtonClick = () => {
 
 const onFileInputChange = () => {
   showModal();
+};
+
+const blockSubmitButton = () => {
+  submitButton.disabled = true;
+  submitButton.textContent = SubmitButtonText.SENDING;
+};
+
+const unblockSubmitButton = () => {
+  submitButton.disabled = false;
+  submitButton.textContent = SubmitButtonText.IDLE;
 };
 
 const normalizeTags = (tagString) => tagString
@@ -90,7 +121,20 @@ pristine.addValidator(
 
 const onFormSubmit = (evt) => {
   evt.preventDefault();
-  pristine.validate();
+
+  const isValid = pristine.validate();
+  if (isValid) {
+    blockSubmitButton();
+    sendData(new FormData(evt.target))
+      .then(() => {
+        showSuccessMessage();
+        hideModal();
+      })
+      .catch(() => {
+        showErrorMessage();
+      })
+      .finally(unblockSubmitButton);
+  }
 };
 
 fileField.addEventListener('change', onFileInputChange);

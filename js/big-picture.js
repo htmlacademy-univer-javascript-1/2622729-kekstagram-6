@@ -5,7 +5,6 @@ let comments = [];
 const bigPictureElement = document.querySelector('.big-picture');
 const bigPictureImgElement = bigPictureElement.querySelector('.big-picture__img img');
 const likesCountElement = bigPictureElement.querySelector('.likes-count');
-const commentsCountElement = bigPictureElement.querySelector('.comments-count');
 const socialCommentsElement = bigPictureElement.querySelector('.social__comments');
 const socialCaptionElement = bigPictureElement.querySelector('.social__caption');
 const socialCommentCountElement = bigPictureElement.querySelector('.social__comment-count');
@@ -53,7 +52,7 @@ const renderComments = () => {
 
   socialCommentsElement.innerHTML = '';
   socialCommentsElement.appendChild(fragment);
-  socialCommentCountElement.innerHTML = `${commentsShown} из <span class="comments-count">${comments.length}</span> комментариев`;
+  socialCommentCountElement.innerHTML = `<span class="social__comment-shown-count">${commentsShown}</span> из <span class="social__comment-total-count">${comments.length}</span> комментариев`;
 };
 
 const closeBigPicture = () => {
@@ -84,7 +83,6 @@ const openBigPicture = (picture) => {
 
   bigPictureImgElement.src = picture.url;
   likesCountElement.textContent = picture.likes;
-  commentsCountElement.textContent = picture.comments.length;
   socialCaptionElement.textContent = picture.description;
 
   comments = picture.comments;
