@@ -19,4 +19,23 @@ const createUniqueIdGenerator = () => {
   };
 };
 
-export { getRandomInteger, createUniqueIdGenerator };
+const debounce = (callback, timeoutDelay = 500) => {
+  let timeoutId;
+  return (...rest) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => callback.apply(this, rest), timeoutDelay);
+  };
+};
+
+const throttle = (callback, delayBetweenFrames) => {
+  let lastTime = 0;
+  return (...rest) => {
+    const now = new Date();
+    if (now - lastTime >= delayBetweenFrames) {
+      callback.apply(this, rest);
+      lastTime = now;
+    }
+  };
+};
+
+export { getRandomInteger, createUniqueIdGenerator, debounce, throttle };
