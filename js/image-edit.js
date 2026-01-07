@@ -12,6 +12,7 @@ const imageElement = document.querySelector('.img-upload__preview img');
 const scaleImage = (value) => {
   imageElement.style.transform = `scale(${value / 100})`;
   scaleInputElement.value = `${value}%`;
+  scaleInputElement.setAttribute('value', `${value}%`);
 };
 
 const onSmallerButtonClick = () => {
